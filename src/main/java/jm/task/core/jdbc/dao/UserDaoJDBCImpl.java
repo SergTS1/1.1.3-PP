@@ -16,7 +16,10 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void createUsersTable() {
-        try (Connection connection = Util.getConnection(); Statement statement = connection.createStatement()) {
+        Connection connection = Util.getConnection();
+        Statement statement;
+        try {
+            statement = connection.createStatement();
             statement.execute("DROP TABLE IF EXISTS users");
             statement.execute("CREATE TABLE table.users (\n" +
                     "  id BIGINT NOT NULL AUTO_INCREMENT,\n" +
@@ -26,38 +29,75 @@ public class UserDaoJDBCImpl implements UserDao {
                     "  PRIMARY KEY (id))\n" +
                     "ENGINE = InnoDB\n" +
                     "DEFAULT CHARACTER SET = utf8mb4;");
+            connection.commit();
+
         } catch (SQLException e) {
             e.printStackTrace();
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
     public void dropUsersTable() {
-        try (Connection connection = Util.getConnection(); Statement statement = connection.createStatement()) {
+        Connection connection = Util.getConnection();
+        Statement statement;
+        try {
+            statement = connection.createStatement();
             statement.execute("DROP TABLE IF EXISTS users");
+            connection.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
     public void saveUser(String name, String lastName, byte age) {
-        try (Connection connection = Util.getConnection(); Statement statement = connection.createStatement()) {
+        Connection connection = Util.getConnection();
+        Statement statement;
+        try {
+            statement = connection.createStatement();
             statement.execute("INSERT INTO users (name, lastname, age) VALUES ('" + name + "', '" + lastName + "', '" + age + "');");
+            connection.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
     public void removeUserById(long id) {
-        try (Connection connection = Util.getConnection(); Statement statement = connection.createStatement()) {
+        Connection connection = Util.getConnection();
+        Statement statement;
+        try {
+            statement = connection.createStatement();
             statement.execute("DELETE FROM users WHERE (id = '" + id + "');");
+            connection.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
-        try (Connection connection = Util.getConnection(); Statement statement = connection.createStatement()) {
+        Connection connection = Util.getConnection();
+        Statement statement;
+        try {
+            statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM table.users;");
             while (resultSet.next()) {
                 users.add(new User(
@@ -67,12 +107,16 @@ public class UserDaoJDBCImpl implements UserDao {
                         (byte) resultSet.getInt("age"))
                 );
             }
-
+            connection.commit();
             resultSet.close();
         } catch (SQLException e) {
             e.printStackTrace();
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
         }
-
         return users;
     }
 
@@ -81,6 +125,5 @@ public class UserDaoJDBCImpl implements UserDao {
         for (int i = 0; i < allUsers.size(); i++) {
             removeUserById(allUsers.get(i).getId());
         }
-
     }
 }
